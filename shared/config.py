@@ -9,7 +9,7 @@ class Config:
 
     GROQ_API_KEY: str= os.getenv("GROQ_API_KEY")
 
-    DEFAULT_MODEL: str = "llama3-70b-8192"
+    DEFAULT_MODEL: str = "openai/gpt-oss-120b"
     MAX_TOKENS: int = 4096
     TEMPERATURE: float = 0.1
 
