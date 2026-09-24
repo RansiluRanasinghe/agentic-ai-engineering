@@ -3,8 +3,8 @@ import sys
 
 from shared.config import Config
 from shared.groq_client import get_async_client
-from parser import parse_llm_output
-from tool import safe_calculate
+from .parser import parse_llm_output
+from .tool import safe_calculate
 
 SYSTEM_PROMPT = """You are a deterministic, logical AI agent capable of executing mathematical calculations.
 
