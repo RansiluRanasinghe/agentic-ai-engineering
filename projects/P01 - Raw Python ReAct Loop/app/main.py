@@ -34,3 +34,63 @@ Observation: 80
 Thought: The math is complete.
 Final Answer: 80
 """
+
+async def run_agent(user_query: str, max_steps: int = 5) -> str:
+    """
+    Executes the ReAct Finite State Machine.
+    Controls the state transitions between the LLM inference, parsing, and tool execution.
+    """
+
+    client = get_async_client()
+
+    messages = [
+        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "user", "content": user_query}
+    ]
+
+    print(f"\n[SYSTEM] Starting Agent Loop for Query: '{user_query}'\n" + "-"*50)
+
+    for step in range(1, max_steps + 1):
+        print(f"\n--- Step {step}/{max_steps} ---")
+
+        try:
+            response = await client.chat.completions.create(
+                model=Config.DEFAULT_MODEL,
+                messages=messages,
+                temperature=Config.DEFAULT_TEMPERATURE,
+            )
+
+            llm_text = response.choices[0].message.content
+            print(f"\n[MODEL OUTPUT]\n{llm_text}\n")
+
+            messages.append({"role": "assistant", "content": llm_text})
+
+        except Exception as e:
+            return f"CRITICAL: Inference failure: {str(e)}"
+
+        parsed_state = parse_llm_output(llm_text)
+
+        if parsed_state["type"] == "final":
+            print("="*50)
+            return parsed_state["content"]
+
+        elif parsed_state["type"] == "action":
+            tool_name = parsed_state["tool"]
+            tool_arg = parsed_state["arg"]
+
+            if tool_name == "calculate":
+                result = safe_calculate(tool_arg)
+                observation = f"{result}"
+            else:
+                observation = f"Error: Unknown tool '{tool_name}'."
+
+            print(f"[TOOL EXECUTION] {tool_name}[{tool_arg}] -> {observation}")
+
+            messages.append({"role": "user", "content": f"Observation: {observation}"})
+
+        elif parsed_state["type"] == "error":
+           print("[SYNTAX ERROR] Model hallucinated formatting. Triggering self-correction.")
+           error_msg = "Observation: Error: Invalid format. You must use 'Action: tool[arg]' or 'Final Answer: <text>'."
+           messages.append({"role": "user", "content": error_msg})
+
+    raise TimeoutError(f"Agent failed to reach a Final Answer within {max_steps} steps.")                      
