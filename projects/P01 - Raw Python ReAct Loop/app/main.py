@@ -57,7 +57,7 @@ async def run_agent(user_query: str, max_steps: int = 5) -> str:
             response = await client.chat.completions.create(
                 model=Config.DEFAULT_MODEL,
                 messages=messages,
-                temperature=Config.DEFAULT_TEMPERATURE,
+                temperature=Config.TEMPERATURE,
             )
 
             llm_text = response.choices[0].message.content
