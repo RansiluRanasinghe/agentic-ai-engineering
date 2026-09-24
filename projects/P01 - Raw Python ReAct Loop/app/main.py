@@ -93,4 +93,31 @@ async def run_agent(user_query: str, max_steps: int = 5) -> str:
            error_msg = "Observation: Error: Invalid format. You must use 'Action: tool[arg]' or 'Final Answer: <text>'."
            messages.append({"role": "user", "content": error_msg})
 
-    raise TimeoutError(f"Agent failed to reach a Final Answer within {max_steps} steps.")                      
+    raise TimeoutError(f"Agent failed to reach a Final Answer within {max_steps} steps.")
+
+async def main():
+       print("Raw Python ReAct Agent Initialized. Type 'exit' to quit.")
+
+       while True:
+           try:
+               user_input = input("\nUser Query: ")
+               if user_input.lower() in ['exit', 'quit']:
+                   print("Exiting the agent. Goodbye!")
+                   break
+               if not user_input.strip():
+                   print("Please enter a valid query.")
+                   continue
+
+               final_answer = await run_agent(user_input)
+               print(f"\nFINAL ANSWER: {final_answer}\n")
+
+           except TimeoutError as e:
+               print(f"\nTIMEOUT ERROR: {e}\n")
+           except KeyboardInterrupt:
+               print("\nShutting down gracefully...")
+               break
+           except Exception as e:
+               print(f"\n UNEXPECTED ERROR: {e}\n")
+
+if __name__ == "__main__":
+    asyncio.run(main())                                     
