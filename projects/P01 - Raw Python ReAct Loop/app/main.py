@@ -75,7 +75,7 @@ async def run_agent(user_query: str, max_steps: int = 5) -> str:
 
             messages.append({
                 "role": "assistant",
-                "content": f"[System provides Observation: {observation}]"
+                "content": llm_text
                 })
 
         except Exception as e:
