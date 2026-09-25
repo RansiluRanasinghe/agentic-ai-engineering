@@ -20,8 +20,7 @@ def safe_calculate(expression: str) -> str:
     """
 
     try:
-
-        tree = ast.parse(expression, mode='eval').body
+        tree = ast.parse(expression, mode="eval").body
 
         def _eval_node(node: ast.AST) -> Any:
             """Recursively evaluates the nodes of the syntax tree."""
@@ -29,7 +28,9 @@ def safe_calculate(expression: str) -> str:
             if isinstance(node, ast.Constant):
                 if isinstance(node.value, (int, float)):
                     return node.value
-                raise TypeError(f"Unsupported constant type: {type(node.value).__name__}. Only numbers are allowed.")
+                raise TypeError(
+                    f"Unsupported constant type: {type(node.value).__name__}. Only numbers are allowed."
+                )
 
             elif isinstance(node, ast.BinOp):
                 left_val = _eval_node(node.left)
@@ -39,16 +40,16 @@ def safe_calculate(expression: str) -> str:
                 if op_type not in _ALLOWED_OPERATORS:
                     raise TypeError(f"Unsupported binary operator: {op_type.__name__}")
 
-                return _ALLOWED_OPERATORS[op_type](left_val, right_val)
+                return _ALLOWED_OPERATORS[op_type](left_val, right_val)  # type: ignore
 
             elif isinstance(node, ast.UnaryOp):
                 operand_val = _eval_node(node.operand)
-                op_type = type(node.op)
+                op_type = type(node.op)  # type: ignore
 
                 if op_type not in _ALLOWED_OPERATORS:
                     raise TypeError(f"Unsupported unary operator: {op_type.__name__}")
 
-                return _ALLOWED_OPERATORS[op_type](operand_val)
+                return _ALLOWED_OPERATORS[op_type](operand_val)  # type: ignore
 
             else:
                 raise TypeError(f"Unsupported expression type: {type(node).__name__}")
@@ -64,5 +65,5 @@ def safe_calculate(expression: str) -> str:
         return "Error: Division by zero is mathematically undefined."
     except SyntaxError:
         return "Error: Malformed mathematical syntax. Check your parentheses and operators."
-    except Exception as e:
-        return f"Error: Invalid mathematical expression. Details: {str(e)}"
+    except Exception as e:  # noqa: BLE001
+        return f"Error: Invalid mathematical expression. Details: {e!s}"

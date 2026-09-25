@@ -1,8 +1,8 @@
 import asyncio
-import sys
 
 from shared.config import Config
 from shared.groq_client import get_async_client
+
 from .parser import parse_llm_output
 from .tool import safe_calculate
 
@@ -44,6 +44,7 @@ Thought: The math is complete.
 Final Answer: 80
 """
 
+
 async def run_agent(user_query: str, max_steps: int = 5) -> str:
     """
     Executes the ReAct Finite State Machine.
@@ -54,10 +55,10 @@ async def run_agent(user_query: str, max_steps: int = 5) -> str:
 
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT},
-        {"role": "user", "content": user_query}
+        {"role": "user", "content": user_query},
     ]
 
-    print(f"\n[SYSTEM] Starting Agent Loop for Query: '{user_query}'\n" + "-"*50)
+    print(f"\n[SYSTEM] Starting Agent Loop for Query: '{user_query}'\n" + "-" * 50)
 
     for step in range(1, max_steps + 1):
         print(f"\n--- Step {step}/{max_steps} ---")
@@ -65,26 +66,26 @@ async def run_agent(user_query: str, max_steps: int = 5) -> str:
         try:
             response = await client.chat.completions.create(
                 model=Config.DEFAULT_MODEL,
-                messages=messages,
+                messages=messages,  # type: ignore
                 temperature=Config.TEMPERATURE,
-                stop=["[System provides Observation:", "\n[System provides Observation:"]
+                stop=[
+                    "[System provides Observation:",
+                    "\n[System provides Observation:",
+                ],
             )
 
-            llm_text = response.choices[0].message.content
+            llm_text = response.choices[0].message.content or ""
             print(f"\n[MODEL OUTPUT]\n{llm_text}\n")
 
-            messages.append({
-                "role": "assistant",
-                "content": llm_text
-                })
+            messages.append({"role": "assistant", "content": llm_text})
 
-        except Exception as e:
-            return f"CRITICAL: Inference failure: {str(e)}"
+        except Exception as e:  # noqa: BLE001
+            return f"CRITICAL: Inference failure: {e!s}"
 
         parsed_state = parse_llm_output(llm_text)
 
         if parsed_state["type"] == "final":
-            print("="*50)
+            print("=" * 50)
             return parsed_state["content"]
 
         elif parsed_state["type"] == "action":
@@ -99,41 +100,49 @@ async def run_agent(user_query: str, max_steps: int = 5) -> str:
 
             print(f"[TOOL EXECUTION] {tool_name}[{tool_arg}] -> {observation}")
 
-            messages.append({
-                "role": "user",
-                "content": f"[System provides Observation: {observation}]"
-            })
+            messages.append(
+                {
+                    "role": "user",
+                    "content": f"[System provides Observation: {observation}]",
+                }
+            )
 
         elif parsed_state["type"] == "error":
-           print("[SYNTAX ERROR] Model hallucinated formatting. Triggering self-correction.")
-           error_msg = "[System provides Observation: Error: Invalid format. You must use 'Action: calculate[arg]' or 'Final Answer: <text>'.]"
-           messages.append({"role": "user", "content": error_msg})
+            print(
+                "[SYNTAX ERROR] Model hallucinated formatting. Triggering self-correction."
+            )
+            error_msg = "[System provides Observation: Error: Invalid format. You must use 'Action: calculate[arg]' or 'Final Answer: <text>'.]"
+            messages.append({"role": "user", "content": error_msg})
 
-    raise TimeoutError(f"Agent failed to reach a Final Answer within {max_steps} steps.")
+    raise TimeoutError(
+        f"Agent failed to reach a Final Answer within {max_steps} steps."
+    )
+
 
 async def main():
-       print("Raw Python ReAct Agent Initialized. Type 'exit' to quit.")
+    print("Raw Python ReAct Agent Initialized. Type 'exit' to quit.")
 
-       while True:
-           try:
-               user_input = input("\nUser Query: ")
-               if user_input.lower() in ['exit', 'quit']:
-                   print("Exiting the agent. Goodbye!")
-                   break
-               if not user_input.strip():
-                   print("Please enter a valid query.")
-                   continue
+    while True:
+        try:
+            user_input = input("\nUser Query: ")
+            if user_input.lower() in ["exit", "quit"]:
+                print("Exiting the agent. Goodbye!")
+                break
+            if not user_input.strip():
+                print("Please enter a valid query.")
+                continue
 
-               final_answer = await run_agent(user_input)
-               print(f"\nFINAL ANSWER: {final_answer}\n")
+            final_answer = await run_agent(user_input)
+            print(f"\nFINAL ANSWER: {final_answer}\n")
 
-           except TimeoutError as e:
-               print(f"\nTIMEOUT ERROR: {e}\n")
-           except KeyboardInterrupt:
-               print("\nShutting down gracefully...")
-               break
-           except Exception as e:
-               print(f"\n UNEXPECTED ERROR: {e}\n")
+        except TimeoutError as e:
+            print(f"\nTIMEOUT ERROR: {e}\n")
+        except KeyboardInterrupt:
+            print("\nShutting down gracefully...")
+            break
+        except Exception as e:  # noqa: BLE001
+            print(f"\n UNEXPECTED ERROR: {e}\n")
+
 
 if __name__ == "__main__":
-    asyncio.run(main())                                     
+    asyncio.run(main())
