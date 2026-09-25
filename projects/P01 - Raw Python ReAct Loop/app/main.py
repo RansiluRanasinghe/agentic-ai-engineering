@@ -67,7 +67,7 @@ async def run_agent(user_query: str, max_steps: int = 5) -> str:
                 model=Config.DEFAULT_MODEL,
                 messages=messages,
                 temperature=Config.TEMPERATURE,
-                stop = ["Observation:", "\nObservation:"]
+                stop=["[System provides Observation:", "\n[System provides Observation:"]
             )
 
             llm_text = response.choices[0].message.content
