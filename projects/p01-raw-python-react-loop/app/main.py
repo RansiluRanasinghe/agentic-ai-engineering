@@ -1,8 +1,8 @@
 import asyncio
-import sys
 
 from shared.config import Config
 from shared.groq_client import get_async_client
+
 from .parser import parse_llm_output
 from .tool import safe_calculate
 
@@ -78,8 +78,8 @@ async def run_agent(user_query: str, max_steps: int = 5) -> str:
                 "content": llm_text
                 })
 
-        except Exception as e:
-            return f"CRITICAL: Inference failure: {str(e)}"
+        except Exception as e: # noqa: BLE001
+            return f"CRITICAL: Inference failure: {e!s}"
 
         parsed_state = parse_llm_output(llm_text)
 
@@ -132,7 +132,7 @@ async def main():
            except KeyboardInterrupt:
                print("\nShutting down gracefully...")
                break
-           except Exception as e:
+           except Exception as e: # noqa: BLE001
                print(f"\n UNEXPECTED ERROR: {e}\n")
 
 if __name__ == "__main__":

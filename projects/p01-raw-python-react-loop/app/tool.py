@@ -64,5 +64,5 @@ def safe_calculate(expression: str) -> str:
         return "Error: Division by zero is mathematically undefined."
     except SyntaxError:
         return "Error: Malformed mathematical syntax. Check your parentheses and operators."
-    except Exception as e:
-        return f"Error: Invalid mathematical expression. Details: {str(e)}"
+    except Exception as e: # noqa: BLE001
+        return f"Error: Invalid mathematical expression. Details: {e!s}"

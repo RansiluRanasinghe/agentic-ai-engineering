@@ -1,7 +1,7 @@
 import re
-from typing import Dict
 
-def parse_llm_output(text: str) -> Dict[str, str]:
+
+def parse_llm_output(text: str) -> dict[str, str]:
     """
     Parses the raw text output from the LLM to extract actionable commands or the final answer.
     
