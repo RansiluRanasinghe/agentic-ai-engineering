@@ -20,8 +20,7 @@ def safe_calculate(expression: str) -> str:
     """
 
     try:
-
-        tree = ast.parse(expression, mode='eval').body
+        tree = ast.parse(expression, mode="eval").body
 
         def _eval_node(node: ast.AST) -> Any:
             """Recursively evaluates the nodes of the syntax tree."""
@@ -29,7 +28,9 @@ def safe_calculate(expression: str) -> str:
             if isinstance(node, ast.Constant):
                 if isinstance(node.value, (int, float)):
                     return node.value
-                raise TypeError(f"Unsupported constant type: {type(node.value).__name__}. Only numbers are allowed.")
+                raise TypeError(
+                    f"Unsupported constant type: {type(node.value).__name__}. Only numbers are allowed."
+                )
 
             elif isinstance(node, ast.BinOp):
                 left_val = _eval_node(node.left)
@@ -64,5 +65,5 @@ def safe_calculate(expression: str) -> str:
         return "Error: Division by zero is mathematically undefined."
     except SyntaxError:
         return "Error: Malformed mathematical syntax. Check your parentheses and operators."
-    except Exception as e: # noqa: BLE001
+    except Exception as e:  # noqa: BLE001
         return f"Error: Invalid mathematical expression. Details: {e!s}"
