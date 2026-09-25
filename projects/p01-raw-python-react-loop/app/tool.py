@@ -40,16 +40,16 @@ def safe_calculate(expression: str) -> str:
                 if op_type not in _ALLOWED_OPERATORS:
                     raise TypeError(f"Unsupported binary operator: {op_type.__name__}")
 
-                return _ALLOWED_OPERATORS[op_type](left_val, right_val) # type: ignore
+                return _ALLOWED_OPERATORS[op_type](left_val, right_val)  # type: ignore
 
             elif isinstance(node, ast.UnaryOp):
                 operand_val = _eval_node(node.operand)
-                op_type = type(node.op) # type: ignore
+                op_type = type(node.op)  # type: ignore
 
                 if op_type not in _ALLOWED_OPERATORS:
                     raise TypeError(f"Unsupported unary operator: {op_type.__name__}")
 
-                return _ALLOWED_OPERATORS[op_type](operand_val) # type: ignore
+                return _ALLOWED_OPERATORS[op_type](operand_val)  # type: ignore
 
             else:
                 raise TypeError(f"Unsupported expression type: {type(node).__name__}")

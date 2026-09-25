@@ -66,7 +66,7 @@ async def run_agent(user_query: str, max_steps: int = 5) -> str:
         try:
             response = await client.chat.completions.create(
                 model=Config.DEFAULT_MODEL,
-                messages=messages, # type: ignore
+                messages=messages,  # type: ignore
                 temperature=Config.TEMPERATURE,
                 stop=[
                     "[System provides Observation:",
