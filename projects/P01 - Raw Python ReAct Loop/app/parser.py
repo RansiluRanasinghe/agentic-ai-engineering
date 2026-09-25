@@ -14,8 +14,8 @@ def parse_llm_output(text: str) -> Dict[str, str]:
                         'tool', 'arg', or 'content'.
     """
 
-    final_answer_pattern = r"Final Answer:\s*(.*)"
-    final_match = re.search(final_answer_pattern, text, re.DOTALL | re.IGNORECASE)
+    final_answer_pattern = r"Final Answer:\s*([^\n]+)"
+    final_match = re.search(final_answer_pattern, text, re.IGNORECASE)
 
     if final_match:
         return{
