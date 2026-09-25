@@ -7,7 +7,7 @@ load_dotenv()
 class Config:
     """Centralized configuration for the agentic monorepo."""
 
-    GROQ_API_KEY: str= os.getenv("GROQ_API_KEY")
+    GROQ_API_KEY: str= os.getenv("GROQ_API_KEY", "")
 
     DEFAULT_MODEL: str = "openai/gpt-oss-120b"
     MAX_TOKENS: int = 4096

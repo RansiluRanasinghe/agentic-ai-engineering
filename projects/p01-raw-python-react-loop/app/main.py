@@ -66,7 +66,7 @@ async def run_agent(user_query: str, max_steps: int = 5) -> str:
         try:
             response = await client.chat.completions.create(
                 model=Config.DEFAULT_MODEL,
-                messages=messages,
+                messages=messages, # type: ignore
                 temperature=Config.TEMPERATURE,
                 stop=[
                     "[System provides Observation:",
@@ -74,7 +74,7 @@ async def run_agent(user_query: str, max_steps: int = 5) -> str:
                 ],
             )
 
-            llm_text = response.choices[0].message.content
+            llm_text = response.choices[0].message.content or ""
             print(f"\n[MODEL OUTPUT]\n{llm_text}\n")
 
             messages.append({"role": "assistant", "content": llm_text})
