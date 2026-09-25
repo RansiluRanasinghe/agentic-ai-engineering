@@ -1,0 +1,33 @@
+# 1. Core Infrastructure & Validation
+
+python-dotenv>=1.0.0       # Loads environment variables from the .env file
+pydantic>=2.7.0            # Enforces strict schema validation for agent outputs
+
+# 2. Inference Providers
+groq>=0.9.0                # Official Groq async client (Llama 3 API)
+
+# 3. Agent Orchestration Frameworks
+langchain>=0.2.0           # Core abstraction layer for tools and chains
+langchain-core>=0.2.0      # Base interfaces (Runnables, Messages)
+langchain-groq>=0.1.0      # Specific LangChain integration for Groq
+langgraph>=0.1.0           # State machine orchestration for multi-agent loops
+langgraph-checkpoint-sqlite>=1.0.0 # Persistent cross-session memory for agents
+
+# 4. Retrieval-Augmented Generation (RAG)
+chromadb>=0.5.0            # Local vector database for semantic search
+sentence-transformers>=3.0.0 # Local open-source embeddings (avoids paid OpenAI embeddings)
+langchain-huggingface>=0.0.3 # Connects local SentenceTransformers to LangChain
+langchain-community>=0.2.0 # Community tools (like DuckDuckGo search integration)
+
+# 5. Observability & Tracing
+langsmith>=0.1.0           # Distributed tracing for complex agent workflows
+
+# 6. Backend API (For Days 11-14)
+fastapi>=0.111.0           # High-performance async web framework
+uvicorn>=0.30.0            # ASGI server to run the FastAPI application
+
+# 7. Quality Assurance (CI/CD Pipeline)
+pytest>=8.2.0              # Unit testing framework
+pytest-asyncio>=0.23.0     # Plugin to test async functions
+ruff>=0.4.0                # Ultra-fast Rust-based linter and formatter
+mypy>=1.10.0               # Static type checker for Python
