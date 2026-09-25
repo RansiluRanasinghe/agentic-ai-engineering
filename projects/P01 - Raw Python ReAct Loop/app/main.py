@@ -73,7 +73,10 @@ async def run_agent(user_query: str, max_steps: int = 5) -> str:
             llm_text = response.choices[0].message.content
             print(f"\n[MODEL OUTPUT]\n{llm_text}\n")
 
-            messages.append({"role": "assistant", "content": llm_text})
+            messages.append({
+                "role": "assistant",
+                "content": f"[System provides Observation: {observation}]"
+                })
 
         except Exception as e:
             return f"CRITICAL: Inference failure: {str(e)}"
@@ -100,7 +103,7 @@ async def run_agent(user_query: str, max_steps: int = 5) -> str:
 
         elif parsed_state["type"] == "error":
            print("[SYNTAX ERROR] Model hallucinated formatting. Triggering self-correction.")
-           error_msg = "Observation: Error: Invalid format. You must use 'Action: tool[arg]' or 'Final Answer: <text>'."
+           error_msg = "[System provides Observation: Error: Invalid format. You must use 'Action: calculate[arg]' or 'Final Answer: <text>'.]"
            messages.append({"role": "user", "content": error_msg})
 
     raise TimeoutError(f"Agent failed to reach a Final Answer within {max_steps} steps.")
