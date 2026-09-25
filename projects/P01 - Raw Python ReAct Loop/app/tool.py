@@ -53,12 +53,12 @@ def safe_calculate(expression: str) -> str:
             else:
                 raise TypeError(f"Unsupported expression type: {type(node).__name__}")
 
-            result = _eval_node(tree)
+        result = _eval_node(tree)
 
-            if isinstance(result, float) and result.is_integer():
-                result = int(result)
+        if isinstance(result, float) and result.is_integer():
+            result = int(result)
 
-            return str(result)
+        return str(result)
 
     except ZeroDivisionError:
         return "Error: Division by zero is mathematically undefined."
