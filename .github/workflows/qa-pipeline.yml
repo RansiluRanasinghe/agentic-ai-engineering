@@ -12,67 +12,66 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
-     - name: Checkout code
-       uses: actions/checkout@v4
-       with:
-         fetch-depth: 0
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-     - name: Get changed files and build dynamic matrix
-       id: set-matrix
-       run: |
-         if [ "${{github.event_name}}" == "pull_request"]; then
-            CHANGED_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }})
-         else
-            CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD)
-         fi
-
-         PROJECTS = $(echo "$CHANGED_FILES" | grep '^projects/' | cut -d'/' -f1,2 | sort -u | jq -R -s -c 'split("\n")[:-1]')
-
-         echo "Changed projects: $PROJECTS"
-         echo "matrix=$PROJECTS" >> $GITHUB_OUTPUT
+      - name: Get changed files and build dynamic matrix
+        id: set-matrix
+        run: |
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+             CHANGED_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }})
+          else
+             CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD)
+          fi
+          
+          # Extracts the 'projects/folder_name' correctly
+          PROJECTS=$(echo "$CHANGED_FILES" | grep '^projects/' | cut -d'/' -f1,2 | sort -u | jq -R -s -c 'split("\n")[:-1]')
+          
+          echo "Changed projects: $PROJECTS"
+          echo "matrix=$PROJECTS" >> $GITHUB_OUTPUT
 
   qa-checks:
-   needs: detect-changes
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.matrix != '[]' && needs.detect-changes.outputs.matrix != '' }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        project: ${{ fromJSON(needs.detect-changes.outputs.matrix) }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-   if: ${{ needs.detect-changes.outputs.matrix != '[]' && needs.detect-changes.outputs.matrix != '' }}
-   runs-on: ubuntu-latest
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: "pip"
 
-   strategy:
-     matrix:
-       project: ${{fromJSON(needs.detect-changes.outputs.matrix)}}
+      - name: Install Core Dependencies & QA Tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install ruff mypy pytest
 
-   steps:
-     -name: Checkout code
-      uses: actions/checkout@v4
+      - name: 1. Compile Python Bytecode
+        run: |
+          python -m compileall ${{ matrix.project }} -q
 
-     -name: Set up Python 3.10
-      uses: actions/setup-python@v5
-      with:
-        python-version: 3.10
-        cache: "pip"
+      - name: 2. Run Ruff Linter
+        run: |
+          ruff check ${{ matrix.project }}
+          ruff format --check ${{ matrix.project }}
 
-     -name: Install Core Dependencies & QA Tools
-     run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install ruff mypy pytest
+      - name: 3. Run MyPy Type Checker
+        run: |
+          mypy ${{ matrix.project }} --ignore-missing-imports
 
-     -name: 1. Compile Python Bytecode
-     run: |
-        python -m compileall projects/${{ matrix.project }} -q
-
-     -name: 2. Run Ruff Linter
-     run: |
-        ruff check projects/${{ matrix.project }}
-        ruff format --check projects/${{ matrix.project }}
-
-     -name: 3. Run MyPy Type Checker
-     run: mypy projects/${{ matrix.project }} --ignore-missing-imports
-
-     -name: 4. Run Pytest Unit Tests
-     run: |
-        if ls ${{matrix.project}}/tests/*.py 1> /dev/null 2>&1; then
-          pytest -q --tb=short --disable-warnings --maxfail=1 ${{ matrix.project }}/tests/
-        else
-          echo "No tests found in ${{ matrix.project }}, skipping pytest."
-        fi
+      - name: 4. Run Pytest Unit Tests
+        run: |
+          if ls ${{ matrix.project }}/tests/*.py 1> /dev/null 2>&1; then
+            pytest -q --tb=short --disable-warnings --maxfail=1 ${{ matrix.project }}/tests/
+          else
+            echo "No tests found in ${{ matrix.project }}, skipping pytest."
+          fi
