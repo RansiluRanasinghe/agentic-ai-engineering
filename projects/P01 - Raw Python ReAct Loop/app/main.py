@@ -99,7 +99,10 @@ async def run_agent(user_query: str, max_steps: int = 5) -> str:
 
             print(f"[TOOL EXECUTION] {tool_name}[{tool_arg}] -> {observation}")
 
-            messages.append({"role": "user", "content": f"Observation: {observation}"})
+            messages.append({
+                "role": "user",
+                "content": f"[System provides Observation: {observation}]"
+            })
 
         elif parsed_state["type"] == "error":
            print("[SYNTAX ERROR] Model hallucinated formatting. Triggering self-correction.")
